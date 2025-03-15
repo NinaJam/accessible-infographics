@@ -1,0 +1,27 @@
+{
+  "name": "image-description-app",
+  "version": "1.0.0",
+  "description": "An application that processes images and generates descriptions suitable for screen readers, ensuring accessibility for visually impaired users.",
+  "main": "src/index.html",
+  "scripts": {
+    "start": "live-server src",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "crypto-js": "^4.0.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0",
+    "live-server": "^1.2.1"
+  },
+  "keywords": [
+    "image",
+    "description",
+    "accessibility",
+    "screen reader",
+    "blind"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

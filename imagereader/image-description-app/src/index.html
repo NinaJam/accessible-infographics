@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Description App</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-image"></i> Image Description App</h1>
+            <p class="tagline">Generating accessible descriptions for everyone</p>
+        </header>
+        <main>
+            <div class="upload-container">
+                <form id="imageUploadForm">
+                    <div class="file-input-wrapper">
+                        <label for="imageInput" class="custom-file-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Choose an image</span>
+                        </label>
+                        <input type="file" id="imageInput" accept="image/*" aria-required="true" aria-describedby="imageHelp">
+                        <span id="fileNameDisplay">No file selected</span>
+                    </div>
+                    <p id="imageHelp">Supported formats: JPEG, PNG, GIF</p>
+                    <button type="submit" id="submitBtn">
+                        <i class="fas fa-search"></i> Describe Image
+                    </button>
+                </form>
+            </div>
+
+            <div class="image-preview-container">
+                <div id="imagePreview" class="hidden">
+                    <h3>Image Preview</h3>
+                    <img id="previewImg" alt="Preview of uploaded image">
+                </div>
+            </div>
+
+            <div class="loader hidden" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Analyzing image...</p>
+            </div>
+
+            <section id="descriptionSection" class="hidden">
+                <h2><i class="fas fa-file-alt"></i> Image Description</h2>
+                <div class="description-box">
+                    <p id="descriptionOutput">Your image description will appear here.</p>
+                </div>
+                <button id="copyBtn" class="secondary-btn">
+                    <i class="fas fa-copy"></i> Copy Description
+                </button>
+                <button id="readBtn" class="secondary-btn">
+                    <i class="fas fa-volume-up"></i> Read Aloud
+                </button>
+            </section>
+        </main>
+        <footer>
+            <p>Designed for accessibility &copy; 2023</p>
+        </footer>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <script src="js/signature.js"></script>
+    <script src="js/imageProcessor.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('imageUploadForm');
+            const fileInput = document.getElementById('imageInput');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const descriptionSection = document.getElementById('descriptionSection');
+            const descriptionOutput = document.getElementById('descriptionOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            const readBtn = document.getElementById('readBtn');
+            
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    fileNameDisplay.textContent = file.name;
+                    
+                    // Show image preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewImg.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    alert('Please select an image file');
+                    return;
+                }
+                
+                // Show loading indicator
+                loadingIndicator.classList.remove('hidden');
+                descriptionSection.classList.add('hidden');
+                
+                try {
+                    const description = await processImage(file);
+                    descriptionOutput.textContent = description;
+                    descriptionSection.classList.remove('hidden');
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                    console.error(error);
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                }
+            });
+            
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(descriptionOutput.textContent)
+                    .then(() => {
+                        alert('Description copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+            });
+            
+            readBtn.addEventListener('click', () => {
+                const utterance = new SpeechSynthesisUtterance(descriptionOutput.textContent);
+                speechSynthesis.speak(utterance);
+            });
+        });
+    </script>
+</body>
+</html>
